@@ -1,5 +1,7 @@
 # Advanced Database Topics - Semester Project
 
+## Group 16 - Areti Mei & Elisavet Papadopoulou
+
 ## Overview
 This repository contains the implementation of the semester project for the course **Advanced Database Topics** at **NTUA ECE**. The project involves analyzing large datasets using **Apache Spark** and **Apache Hadoop** on **AWS S3** and **SageMaker**.
 
