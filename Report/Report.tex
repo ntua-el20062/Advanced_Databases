@@ -1,0 +1,703 @@
+\documentclass{article}
+\usepackage[greek,english]{babel}
+\usepackage{alphabeta}
+\usepackage{xcolor}
+\usepackage{listings}
+
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{blindtext}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{steinmetz}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage[shortlabels]{enumitem}
+\usepackage{tikz}
+\usepackage{fdsymbol}
+% \newcommand{\comment}[1]{}
+\renewcommand{\labelitemii}{\(\medblackdiamond\)}
+\renewcommand{\labelitemiii}{\(\medblacksquare\)}
+\renewcommand{\labelitemiv}{\(\medblackcircle\)}%
+ \geometry{
+ a4paper,
+ total={170mm,257mm},
+ left=20mm,
+ top=20mm,
+ }
+ \lstset{basicstyle=\ttfamily,
+  showstringspaces=false,
+  commentstyle=\color{red},
+  keywordstyle=\color{blue}
+}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\geometry{top=1in, bottom=1in, left=1in, right=1in}
+
+
+\begin{document}
+\title{Προχωρημένα Θέματα Βάσεων Δεδομένων \\ Εξαμηνιαία Εργασία}
+\date{}
+\author{ 
+\large Ομάδα 16 \\
+Αρετή Μέη: 03120062 \\ 
+Ελισάβετ Παπαδοπούλου : 03120190
+}
+\maketitle 
+\pagebreak
+
+
+\section{ Εισαγωγή }
+Αντικείμενο της παρούσας εξαμηνιαίας εργασίας είναι η ανάλυση σε μεγάλα σύνολα δεδομένων, εφαρμμόζοντας επεξεργασία με τεχνικές που εφαρμόζονται σε Data Science Projects. Στα πλαίσια του project, χρησιμοποιήθηκαν τα εργαλεία Apache Hadoop (version>=3.0) και Apache Spark (version>=3.5). Η εργασία εκτελέστηκε σε ένα ειδικά διαμορφωμένο περιβάλλον στο AWS cloud. 
+
+\section{ Δεδομένα }
+Τα σύνολα δεδομένων που χρησιμοποιήθηκαν είναι διαθέσιμα και δωρεάν, και έχουν περισυλλεγεί από διαφορετικές πηγές. Λίγα λόγια για τα data-sets παρατίθενται παρακάτω: 
+
+\subsection{ Βασικό data-set: Los Angeles Crime Data }
+Το βασικό σύνολο δεδομένων το οποίο καλούμαστε να χρησιμοποιήσουμε περιλαμβάνει δεδομένα καταγραφής εγκλημάτων για το Los Angeles, από το 2010 μέχρι και σήμερα. Πρόκειται, συγκεκριμένα, για δύο .csv αρχεία, ένα για τα εγκλήματα που διαδραματίστηκαν από το 2010 ως το 2019, και ένα από το 2020 εώς και το 2023. 
+
+\subsection{ LA Police Stations } 
+Πρόκειται για ένα μικρό σύνολο δεδομένων, που περιέχει τις πληροφορίες σχετικά με την τοποθεσία των 21 αστυνομικών τμημάτων που βρίσκονται στην πόλη του Los Angeles. 
+
+\subsection{ 2010 Census Blocks (Los Angeles County)}
+Πρόκειται για ένα σύνολο δεδομένων απογραφικών στοιχείων, αναφορικά με την Κομητεία του Los Angeles για το έτος 2010 σε geojson format. Συνοδεύεται από το αρχείο που περιγράφει τα πεδία του.
+
+\subsection{Median Household Income by Zip Code (Los Angeles County)}
+Άλλο ένα μικρό σύνολο δεδομένων, που περιέχει πληροφορίες σχετικά με το μέσο εισόδημα ανά νοικοκυριό και ταχυδρομικό κώδικα στην Κομητεία του Los Angeles. Το συγκεκριμένο σύνολο παρήχθηκε με βάση τα αποτελέσματα της απογραφής του έτους 2015. 
+
+\subsection{ Race and Ethnicity codes }
+Ένα μικρό σύνολο δεδομένων που περιέχει τις πλήρες περιγραφές που
+αντιστοιχούν στην κωδικοποίηση του φυλετικού προφίλ που χρησιμοποιείται στο βασικό σύνολο δεδομένων.
+
+\section{ Ζητούμενα }
+\subsection{Query 1}
+\subsubsection*{Υλοποίηση}
+Το Query 1 ζητάει την ταξινόμηση, σε φθίνουσα σειρά, των ηλικιακών ομάδων των θυμάτων σε περιστατικά που περιλαμβάνουν οποιαδήποτε μορφή “βαριάς σωματικής βλάβης”. Οι ηλικιακές ομάδες που εξετάζονται είναι:
+\begin{itemize}
+    \item Παιδιά: $<$ 18
+    \item Νεαροί ενήλικοι: 18 – 24
+    \item Ενήλικοι: 25 – 64
+    \item Ηλικιωμένοι: $>$ 64
+\end{itemize}
+
+Η υλοποίηση του Query 1 περιλαμβάνει τα εξής βήματα:
+\begin{enumerate}
+    \item \textbf{Φόρτωση δεδομένων:} Φορτώνονται δύο αρχεία CSV, που περιέχουν δεδομένα εγκλημάτων από το 2010 έως το 2019 και από το 2020 έως το παρόν, αντίστοιχα. 
+    \item \textbf{Συνένωση δεδομένων:} Τα δύο σύνολα δεδομένων ενώνονται σε ένα ενιαίο DataFrame ή RDD, εξαιρώντας εγγραφές που περιέχουν μηδενικές συντεταγμένες (LAT, LON).
+    \item \textbf{Φιλτράρισμα περιστατικών:} Φιλτράρονται μόνο τα περιστατικά που περιλαμβάνουν τη φράση \texttt{“aggravated assault”} στη στήλη \texttt{Crm Cd Desc}.
+    \item \textbf{Ομαδοποίηση ηλικιών:} Χρησιμοποιώντας την τιμή της στήλης \texttt{Vict Age}, τα θύματα ταξινομούνται στις εξής ηλικιακές ομάδες:
+          \begin{itemize}
+              \item Παιδιά, αν $1 \leq \texttt{Vict Age} < 18$.
+              \item Νεαροί ενήλικοι, αν $18 \leq \texttt{Vict Age} \leq 24$.
+              \item Ενήλικοι, αν $25 \leq \texttt{Vict Age} \leq 64$.
+              \item Ηλικιωμένοι, αν $\texttt{Vict Age} \geq 65$.
+          \end{itemize}
+          Εγγραφές με μη έγκυρες ηλικίες κατατάσσονται στην κατηγορία \texttt{Unknown}, η οποία στη συνέχεια εξαιρείται από την ανάλυση.
+    \item \textbf{Αριθμός περιστατικών ανά ομάδα:} Υπολογίζεται ο συνολικός αριθμός περιστατικών για κάθε ηλικιακή ομάδα, και τα αποτελέσματα ταξινομούνται σε φθίνουσα σειρά με βάση τον αριθμό περιστατικών.
+\end{enumerate}
+\subsubsection*{Αποτελέσματα και Σχολιασμός}
+Τα αποτελέσματα που προέκυψαν από το Query φαίνονται παρακάτω: \\
+\begin{table}[H]
+\centering
+\caption{Query 1 Results}
+\label{tab:query1_results}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Age Group}		& 		\textbf{Incident Count}	\\ \hline
+\textbf{Adults}			&		121052					\\ \hline
+\textbf{Young Adults}	&		33588					\\ \hline
+\textbf{Children}      		&		10825					\\ \hline
+\textbf{Elderly}			&		5985					\\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection*{Σύγκριση Dataframe - RDD APIs}
+Στο πρώτο ερώτημα καλούμαστε να υλοποιήσουμε το Query 1 χρησιμοποιώντας τόσο \textbf{DataFrame}, αλλά και \textbf{RDD APIs}. Οι δύο υλοποιήσεις εκτελέστηκαν με \textbf{4 Spark Executors}. Προτού οδηγηθούμε στον σχολιασμό των χρόνων εκτελέσεων των δύο μεθόδων, παραθέτουμε θεωρητικές γνώσεις σχετικές με τα δύο APIs.
+\begin{enumerate}
+	\item \textbf{RDD API}: Παρέχει χαμηλού επιπέδου αφαίρεση για τα κατανεμημένα δεδομένα. Ο
+			χρήστης πρέπει να ορίζει ρητά τους μετασχηματισμούς και τις ενέργειες, ενώ
+			διαχειρίζεται και τη σειριοποίηση και βελτιστοποίηση μόνος του. Έτσι, προσφέρει
+			μεγαλύτερη ευελιξία, αλλά απαιτεί περισσότερη προσπάθεια και γραφή κώδικα. Όσον
+			αφορά την απόδοση, δεν εκμεταλλεύεται το \textbf{Query Optimization}, και κάθε ενέργεια
+			εκτελείται όπως ορίζεται, χωρίς προσαρμογές, κάτι που μπορεί να οδηγήσει σε
+			λιγότερο αποδοτική εκτέλεση. Γενικά, η χρήση του ενδείκνυται για αρκετά
+			πολύπλοκες λειτουργίες που απαιτούν λεπτομερή έλεγχο των δεδομένων ή όταν
+			χρησιμοποιούνται προσαρμοσμένες μορφές δεδομένων, ωστόσο έχει μεγαλύτερες
+			απαιτήσεις σε μνήμη και CPU.
+	\textbf{DataFrame API}: Είναι πιο φιλικό προς το χρήστη, ειδικά αν έχει εξοικείωση με SQL,
+			καθώς επιτρέπει την υλοποίηση Queries παρόμοιων με αυτά των βάσεων δεδομένων.
+			Εκμεταλλεύεται τον Catalyst Optimizer και την Tungsten Execution Engine, οι οποίοι:
+			\begin{enumerate} 
+				\item βελτιστοποιούν το πλάνο εκτέλεσης των ερωτημάτων, 
+				\item χρησιμοποιούν πιο αποδοτικούς αλγορίθμους για φιλτράρισμα, συνενώσεις (joins) και 				ομαδοποιήσεις (aggregations) 
+				\item και μπορούν να αποθηκεύσουν δεδομένα σε μορφή στηλών  (columnar storage) για καλύτερη απόδοση.
+			\end{enumerate}
+		 	Έτσι, το \textbf{DataFrame API} καθίσταται ταχύτερο και πιο αποδοτικό για μεγάλους όγκους δεδομένων.
+\end{enumerate}
+Οι παραπάνω γνώσεις μας επιβεβαιώνουν τις παρατηρήσεις για τους χρόνους εκτέλεσης που απαιτεί το κάθε API για το Query 1, οι οποίοι φαίνονται παρακάτω: \\
+\begin{table}[H]
+\centering
+\caption{Query 1 Execution Time Results}
+\label{tab:query1_execution_times}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{API}				& 		\textbf{Execution Time}			\\ \hline
+\textbf{DatFrame API}	&		29.42493221130371 seconds		\\ \hline
+\textbf{RDD API}		&		38.487494346466064 seconds		\\ \hline
+\end{tabular}
+\end{table}
+
+\newpage
+\subsection{Query 2}
+\subsubsection*{\large  α. Ερώτημα}
+Στο συγκεκριμένο ερώτημα καλούμαστε ξανά να υλοποιήσουμε το Query 2, χρησιμοποιώντας τόσο \textbf{DataFrame} αλλά και \textbf{SQL API}. Παρακάτω σχολιάζεται η υλοποίηση, καθώς επίσης και τα αποτελέσματα των εκτελέσεών μας: 
+
+\subsubsection*{Υλοποίηση}
+
+Το Query 2 ζητάει να υπολογιστούν τα τρία Αστυνομικά Τμήματα με το υψηλότερο ποσοστό κλεισμένων (περατωμένων) υποθέσεων για κάθε έτος. Τα αποτελέσματα πρέπει να περιλαμβάνουν το έτος, τα ονόματα των τμημάτων, τα ποσοστά τους, και την κατάταξή τους (ranking). Τα αποτελέσματα εμφανίζονται σε αύξουσα σειρά έτους και ranking.
+
+Η υλοποίηση περιλαμβάνει τα εξής βήματα:
+\begin{enumerate}
+    \item \textbf{Φόρτωση δεδομένων:} Φορτώνονται τα αρχεία CSV που περιέχουν δεδομένα για τα Αστυνομικά Τμήματα και τα εγκλήματα. Τα δεδομένα συνενώνονται σε ένα ενιαίο DataFrame, εξαιρώντας εγγραφές με μηδενικές συντεταγμένες (LAT, LON).
+    \item \textbf{Προσθήκη στήλης έτους:} Προστίθεται μια στήλη που υπολογίζει το έτος κάθε περιστατικού, με βάση τη στήλη \texttt{DATE OCC}.
+    \item \textbf{Φιλτράρισμα κλεισμένων υποθέσεων:} Εγγραφές με τιμή \texttt{UNK} ή \texttt{Invest Cont} στη στήλη \texttt{Status Desc} θεωρούνται μη περατωμένες και εξαιρούνται.
+    \item \textbf{Υπολογισμός περιστατικών:} Υπολογίζεται ο συνολικός αριθμός περιστατικών (\texttt{TotalCases}) και ο αριθμός των κλεισμένων υποθέσεων (\texttt{ClosedCases}) ανά έτος και τμήμα.
+    \item \textbf{Υπολογισμός ποσοστού:} Προστίθεται στήλη \texttt{ClosedCasePercentage}, που υπολογίζεται ως:
+          \[
+          \texttt{ClosedCasePercentage} = \frac{\texttt{ClosedCases}}{\texttt{TotalCases}} \times 100
+          \]
+    \item \textbf{Κατάταξη:} Χρησιμοποιείται η λειτουργία \texttt{ROW\_NUMBER()} για την κατάταξη των τμημάτων με βάση το ποσοστό κλεισμένων υποθέσεων, ανά έτος.
+    \item \textbf{Φιλτράρισμα τριών κορυφαίων τμημάτων:} Διατηρούνται μόνο οι τρεις κορυφαίες καταχωρίσεις (\texttt{Rank} $\leq 3$) για κάθε έτος.
+    \item \textbf{Παρουσίαση αποτελεσμάτων:} Τα αποτελέσματα ταξινομούνται σε αύξουσα σειρά έτους και κατάταξης.
+\end{enumerate}
+
+\subsubsection*{Αποτελέσματα και Σχολιασμός}
+Τα αποτελέσματα που προέκυψαν από το Query φαίνονται παρακάτω: \\
+\begin{table}[h!]
+\centering
+\caption{Closed Case Percentage by Year and Division}
+\label{tab:closed_case_percentage}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Year} & \textbf{AREA NAME} & \textbf{Closed Case Percentage} & \textbf{Rank} \\ \hline
+2010 & Rampart & 32.85090742017 & 1 \\ \hline
+2010 & Olympic & 31.515289821999087 & 2 \\ \hline
+2010 & Harbor & 29.36028339237341 & 3 \\ \hline
+2011 & Olympic & 35.03192688118192 & 1 \\ \hline
+2011 & Rampart & 32.500296103280824 & 2 \\ \hline
+2011 & Harbor & 28.516260162601625 & 3 \\ \hline
+2012 & Olympic & 34.295435879385195 & 1 \\ \hline
+2012 & Rampart & 32.461037450569904 & 2 \\ \hline
+2012 & Harbor & 29.534834324553948 & 3 \\ \hline
+2013 & Olympic & 33.58217940999398 & 1 \\ \hline
+2013 & Rampart & 32.1060382916053 & 2 \\ \hline
+2013 & Harbor & 29.70696405267529 & 3 \\ \hline
+2014 & Van Nuys & 32.00295639320029 & 1 \\ \hline
+2014 & West Valley & 31.512710797885727 & 2 \\ \hline
+2014 & Mission & 31.21740874448456 & 3 \\ \hline
+2015 & Van Nuys & 32.265140677157845 & 1 \\ \hline
+2015 & Mission & 30.466622852314334 & 2 \\ \hline
+2015 & Foothill & 30.353001803658852 & 3 \\ \hline
+2016 & Van Nuys & 32.1880650994575 & 1 \\ \hline
+2016 & West Valley & 31.404702970297027 & 2 \\ \hline
+2016 & Foothill & 29.908647228131645 & 3 \\ \hline
+2017 & Van Nuys & 32.04915003695491 & 1 \\ \hline
+2017 & Mission & 31.055387158996968 & 2 \\ \hline
+2017 & Foothill & 30.469700657094183 & 3 \\ \hline
+2018 & Foothill & 30.731346958877126 & 1 \\ \hline
+2018 & Mission & 30.730034296913278 & 2 \\ \hline
+2018 & Van Nuys & 28.905206942590123 & 3 \\ \hline
+2019 & Mission & 30.719878207916484 & 1 \\ \hline
+2019 & West Valley & 30.57529223011689 & 2 \\ \hline
+2019 & Foothill & 29.208050182958704 & 3 \\ \hline
+2020 & West Valley & 30.804455445544555 & 1 \\ \hline
+2020 & Mission & 30.328549401020044 & 2 \\ \hline
+2020 & Harbor & 29.780741410488247 & 3 \\ \hline
+2021 & Mission & 30.555555555555557 & 1 \\ \hline
+2021 & West Valley & 29.05611645926274 & 2 \\ \hline
+2021 & Foothill & 28.19376964847099 & 3 \\ \hline
+2022 & West Valley & 26.536367172306498 & 1 \\ \hline
+2022 & Harbor & 26.337538060026098 & 2 \\ \hline
+2022 & Topanga & 26.236786469344608 & 3 \\ \hline
+2023 & Foothill & 26.750524109014673 & 1 \\ \hline
+2023 & Topanga & 26.538022616453986 & 2 \\ \hline
+2023 & Mission & 25.662731120516817 & 3 \\ \hline
+2024 & Foothill & 18.667786174083403 & 1 \\ \hline
+2024 & 77th Street & 17.6147382029735 & 2 \\ \hline
+2024 & Mission & 17.187827911857294 & 3 \\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection*{Σύγκριση Dataframe - SQL APIs}
+Αρχικά, παρατίθενται ορισμένες θεωρητικές γνώσεις, αναφορικά με τα δύο διαφορετικά APIs. 
+\begin{enumerate}
+	\item : Κάθε μετασχηματισμός προστίθεται στο logical query plan, το οποίο
+		στη συνέχεια βελτιστοποιείται από το Spark. Απαιτεί περισσότερα βήματα, όπως
+		withColumn, filter, groupBy και join, για να φτάσει στο επιθυμητό αποτέλεσμα.
+	\item Όλη η λογική δηλώνεται εκ των προτέρων σε ένα ερώτημα ενώ μειώνεται ο
+		επιπλέον φόρτος από πολλαπλούς μετασχηματισμούς όταν αντιμετωπίζουμε
+		σύνθετες διαδικασίες
+\end{enumerate}
+
+Παρακάτω παρατίθενται οι τελικοί χρόνοι εκτέλεσης για τα δύο APIs: \\
+
+\begin{table}[H]
+\centering
+\caption{Query 2a Execution Time Results}
+\label{tab:query2a_execution_times}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{API}			& 		\textbf{Execution Time}			\\ \hline
+\textbf{DatFrame API}	&		2.2361557483673096 seconds		\\ \hline
+\textbf{RDD API}		&		2.17 seconds						\\ \hline
+\end{tabular}
+\end{table}
+
+Και τα δύο APIs καταλήγουν σε παρόμοια πλάνα εκτέλεσης, καθώς μεταφράζονται
+στο εσωτερικό λογικό μοντέλο του Spark. Οι διαφορές που ενδέχεται να προκύψουν
+οφείλονται στα ενδιάμεσα στάδια που δημιουργούνται από τα πολλά βήματα του
+DataFrame API. Παρατηρούμε στο ερώτημά μας ότι η διαφορά μεταξύ των χρόνων
+δεν είναι μεγάλη.
+
+\subsubsection*{\large  β. Ερώτημα}
+Στο δεύτερο ερώτημα μας ζητείται η συγγραφή κώδικα \textbf{Spark}, ο οποίος μετατρέπει το κυρίως data set σε parquet file format και αποθηκεύει ένα μοναδικό \textbf{.parquet αρχείο} στο S3 bucket της ομάδας μας. Στην συνέχεια, καλούμαστε να συγκρίνουμε τους χρόνους της εκτέλεσης της εφαρμογής μας, για την περίπτωση που τα δεδομένα εισάγονται σαν \textbf{.csv} και σαν \textbf{.parquet}.  \\
+
+Επιλέξαμε την υλοποίηση του \textbf{Dataframe API} για να πειραματιστούμε με το
+.parquet τύπο αρχείων και έχουμε:
+\begin{enumerate}
+	\item \textbf{CSV}: Τα αρχεία CSV είναι λιγότερο αποδοτικά σε ταχύτητα
+						ανάγνωσης/εγγραφής λόγω της απουσίας βελτιστοποιημένης μορφοποίησης.
+						Η ανάγνωση δεδομένων από CSV απαιτεί χρόνο για την αναγνώριση τύπων
+						δεδομένων και τη διαχείριση του text parsing.
+	\item \textbf{Parquet}: Το Parquet είναι μία column-based μορφή αρχείου που συμπιέζει
+						δεδομένα και βελτιστοποιεί την ανάγνωση συγκεκριμένων στηλών. Η εγγραφή
+						σε Parquet είναι αργή λόγω της συμπίεσης, αλλά η ανάγνωση είναι σημαντικά
+						ταχύτερη.
+\end{enumerate}
+
+Οι παρατηρήσεις μας επιβεβαιώνονται από τα αποτελέσματα που πήραμε, όπου και
+βλέπουμε σημαντική μείωση του χρόνου, και συγκεκριμένα μια ολόκληρη τάξη μεγέθους.
+
+\begin{table}[H]
+\centering
+\caption{Query 2a Execution Time Results}
+\label{tab:query2a_execution_times}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{File Format}			& 		\textbf{Execution Time}			\\ \hline
+\textbf{Parquet}			&		0.36 seconds						\\ \hline
+\textbf{CSV}				&		2.2361557483673096 seconds		\\ \hline
+\end{tabular}
+\end{table}
+
+\newpage
+\subsection {Query 3}
+
+
+Η υλοποίηση του Query 3 αφορά τον υπολογισμό του μέσου ετήσιου εισοδήματος ανά άτομο και της αναλογίας συνολικού αριθμού εγκλημάτων ανά άτομο για κάθε περιοχή του Los Angeles, με βάση δεδομένα απογραφής πληθυσμού του 2010 και εισοδήματος ανά νοικοκυριό του 2015.
+
+\subsubsection*{Δεδομένα}
+Χρησιμοποιήθηκαν τα παρακάτω datasets και τα συγκεκριμένα κελιά τους:
+\begin{itemize}
+    \item \textbf{Crime Data}: Περιέχει δεδομένα εγκλημάτων, με σημαντικές στήλες:
+    \begin{itemize}
+        \item \texttt{LAT}, \texttt{LON}: Γεωγραφικές συντεταγμένες.
+        \item \texttt{COMM}: Όνομα περιοχής.
+        \item \texttt{ZCTA10}: Ταχυδρομικός κώδικας.
+    \end{itemize}
+    \item \textbf{LA Income Data}: Περιέχει δεδομένα εισοδήματος ανά νοικοκυριό του 2015, με σημαντικές στήλες:
+    \begin{itemize}
+        \item \texttt{Community}: Όνομα περιοχής.
+        \item \texttt{Zip Code}: Ταχυδρομικός κώδικας.
+        \item \texttt{Estimated Median Income}: Μέσο εισόδημα ανά νοικοκυριό.
+    \end{itemize}
+    \item \textbf{2010 Census Blocks}: Περιέχει δεδομένα απογραφής πληθυσμού και κατοικιών, με σημαντικές στήλες:
+    \begin{itemize}
+        \item \texttt{COMM}: Όνομα περιοχής.
+        \item \texttt{ZCTA10}: Ταχυδρομικός κώδικας.
+        \item \texttt{POP\_2010}: Συνολικός πληθυσμός.
+        \item \texttt{HOUSING10}: Συνολικές κατοικίες.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection*{Βήματα Υλοποίησης}
+\begin{enumerate}
+    \item \textbf{Φόρτωση και Καθαρισμός Δεδομένων}:
+    \begin{itemize}
+        \item Τα δεδομένα φορτώνονται από αρχεία \texttt{CSV} και \texttt{GeoJSON}.
+        \item Το πεδίο \texttt{Estimated Median Income} καθαρίζεται από ειδικούς χαρακτήρες ('\$', ',') και μετατρέπεται σε αριθμητικό τύπο.
+    \end{itemize}
+    
+    \item \textbf{Ομαδοποίηση Πληθυσμού και Κατοικιών}:
+    Ο πληθυσμός και οι κατοικίες ομαδοποιούνται ανά περιοχή (\texttt{COMM}) και ταχυδρομικό κώδικα (\texttt{ZCTA10}) για τον υπολογισμό των συνολικών τιμών (\texttt{total\_population}, \texttt{total\_households}).
+
+    \item \textbf{Ενοποίηση Δεδομένων Εισοδήματος και Πληθυσμού}:
+    Τα δεδομένα εισοδήματος και πληθυσμού ενώνονται με βάση το όνομα περιοχής (\texttt{COMM}) και τον ταχυδρομικό κώδικα (\texttt{ZCTA10}).
+
+    \item \textbf{Γεωχωρική Ενοποίηση Δεδομένων Εγκλημάτων}:
+    Τα δεδομένα εγκλημάτων ενσωματώνονται χρησιμοποιώντας γεωχωρική ένωση (\texttt{ST\_Within}), αντιστοιχίζοντας εγκλήματα στις αντίστοιχες περιοχές με βάση τις γεωγραφικές συντεταγμένες (\texttt{LAT}, \texttt{LON}).
+
+    \item \textbf{Υπολογισμοί}:
+    \begin{itemize}
+        \item Το μέσο εισόδημα ανά άτομο υπολογίζεται ως:
+        \[
+        \texttt{income\_per\_person} = \frac{\texttt{total\_households} \times \texttt{median\_income}}{\texttt{region\_total\_population}}
+        \]
+        \item Η αναλογία εγκλημάτων ανά άτομο υπολογίζεται ως:
+        \[
+        \texttt{crimes\_per\_person} = \frac{\texttt{total\_crime\_number}}{\texttt{region\_total\_population}}
+        \]
+    \end{itemize}
+
+    \item \textbf{Συγκέντρωση και Ταξινόμηση Αποτελεσμάτων}:
+    Τα αποτελέσματα συγκεντρώνονται σε έναν πίνακα με τις στήλες:
+    \begin{itemize}
+        \item \texttt{region}: Όνομα περιοχής.
+        \item \texttt{income\_per\_person}: Μέσο εισόδημα ανά άτομο.
+        \item \texttt{crimes\_per\_person}: Αναλογία εγκλημάτων ανά άτομο.
+    \end{itemize}
+    Ο πίνακας ταξινομείται ανάλογα με την αναλογία εγκλημάτων ή το εισόδημα και φαίνεται παρακάτω, κρατώντας ενδεικτικά τις πέντε περιοχές με μεγαλύτερο crime ratio και τις πέντε με μεγαλύτερο income per person. 
+\begin{table}[H]
+\centering
+\caption{Income Per Person and Crimes Per Person by Region}
+\label{tab:income_crimes}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Region} & \textbf{Income Per Person} & \textbf{Crimes Per Person} \\ \hline
+Vernon         & 4406.45                    & 6.34                       \\ \hline
+Downtown       & 19107.38                   & 4.21                       \\ \hline
+Little Tokyo   & 23815.34                   & 4.02                       \\ \hline
+Hollywood      & 25648.05                   & 1.55                       \\ \hline
+Chinatown      & 14058.46                   & 1.26                       \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Income Per Person and Crimes Per Person by Region (Top Regions)}
+\label{tab:top_income_crimes}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Region}               & \textbf{Income Per Person} & \textbf{Crimes Per Person} \\ \hline
+Marina del Rey                & 76428.85                   & 0.0792                     \\ \hline
+Century City                  & 73014.41                   & 0.8558                     \\ \hline
+Pacific Palisades             & 72058.72                   & 0.4509                     \\ \hline
+Malibu                        & 67132.45                   & $7.91 \times 10^{-5}$      \\ \hline
+Marina Peninsula              & 65235.69                   & 0.6124                     \\ \hline
+\end{tabular}
+\end{table}
+
+
+\end{enumerate}
+\subsubsection*{Hint \& Explain}
+Ο Catalyst Optimizer του Spark επιλέγει στρατηγικές \texttt{join} βασισμένος σε διάφορους παράγοντες, όπως το μέγεθος των δεδομένων, τη διαθέσιμη μνήμη, τη θέση των δεδομένων, και τα μεταδεδομένα των στηλών. Παρακάτω παραθέτουμε τις επιλογές του σε καθένα από τα τέσσερα διαφορετικά join που εκτελέσαμε, όπως αυτά φαίνονται στο πεδίο \textbf{Physical Plan} του \textbf{Explain} που εκτελέσαμε για το προϊόν έκαστου join. 
+\begin{enumerate}
+\item \textbf{comm\_pop with la\_income\_clean} \\ 
+Κάνουμε join τα:
+\begin{itemize}
+	\item Flattened δεδομένα του dataset \textbf{2010\_Census\_Blocks\_fields.csv}, έχοντας πρώτα απαλείψει τις καταχωρήσεις με μηδενικό housing ή μηδενικό πληθυσμό, έχουμε ομαδοποιήσει με βάση το ζευγάρι \textbf{("COMM", "ZCTA10")}, και για τα οποία έχουμε υπολογίσει τον συνολικό αριθμό \textbf{households}, και \textbf{population}, 
+	\item με το καθαρισμένο από τα σύμβολα "\$" και "," \textbf{LA\_income\_2015.csv} dataset. 
+\end{itemize}
+Η τεχνική που επιλέχθηκε: \textbf{BroadcastHashJoin} 
+\item \textbf{crime\_data\_geom with flattened\_blocks\_df} \\ 
+Κάνουμε join τα:
+\begin{itemize}
+	\item Δεδομένα του union των dataset \textbf{Crime\_Data\_from\_2010\_to\_2019\_20241101.csv} - \\ \textbf{Crime\_Data\_from\_2020\_to\_Present\_20241101.csv}, έχοντας πρώτα αφαιρέσει τις καταχωρήσεις με γεωγραφική θέση \textbf{(LON, LAT) = (0,0)} και έχοντας προσθέσει ένα column με όνομα geom, το οποίο προκύπτει από την συνάρτηση \textbf{ST\_Point} και αναπαριστά την γεωγραφική θέση όπου διαδραματίστηκε η κάθε καταχώρηση. 
+	\item με τα Flattened  δεδομένα του dataset \textbf{2010\_Census\_Blocks\_fields.csv}, έχοντας πρώτα απαλείψει τις καταχωρήσεις με μηδενικό housing ή μηδενικό πληθυσμό.
+\end{itemize}
+Η τεχνική που επιλέχθηκε: \textbf{RangeJoin}
+\item \textbf{income\_result with crime\_result} \\
+Κάνουμε join τα:
+\begin{itemize}
+	\item Δεδομένα που έχουν προκύψει από το προηγούμενο join, αφού αυτά ομαδοποιηθούν κατά \textbf{("COMM", "ZCTA10")} και προσμετρηθούν τα εγκλήματα που αναλογούν σε αυτά τα ζεύγη, υπολογιστούν  τα εγκλήματα και οι συνολικοί πληθυσμοί ανά περιοχή (COMM) και στην συνέχεια προστεθεί η στήλη "crimes\_per\_person" με την διαίρεση τους. 
+	\item με το αποτέλεσμα του πρώτου join, αφού σε αυτό υπολογιστούν το συνολικό εισόδημα και ο συνολικός πληθυσμός ανά περιοχή, και προστεθεί μία στήλη με την διαίρεσή τους. 
+\end{itemize}
+Η τεχνική που επιλέχθηκε: \textbf{SortMergeJoin} 
+\end{enumerate}
+
+
+\subsubsection*{Σχολιασμός}
+Για να εξετάσουμε εναλλακτικές στρατηγικές, χρησιμοποιήσαμε \texttt{hints} για να αναγκάσουμε τον Optimizer να υλοποιήσει διαφορετικά \texttt{join strategies}. Αρχικά, θα κάνουμε μια θεωρητική αναφορά σε κάθε μία από τις τέσσερις (4) ζητούμενες στρατηγικές \textbf{join}:
+\begin{itemize}
+    \item \textbf{Broadcast Join}: Πρόκειται για μια βελτιστοποιημένη στρατηγική join, όπου ένας από τους δύο πίνακες είναι αρκετά μικρός για να γίνει broadcast σε όλα τα nodes του cluster. To Spark στέλνει το μικρότερο dataset σε όλους τους επεξεργαστές, επιτρέποντας να γίνει join τοπικά σε κάθε κόμβο χωρίς να χρειαστεί shuffling του μεγαλύτερου dataset. Συγκεκριμένα: 
+	\begin{enumerate} 
+		\item Το μικρότερο dataset στέλνεται με broadcast σε όλους τους κόμβους.
+		\item Κάθε κόμβος επεξεργάζεται το δικό του partition του μεγαλύτερου dataset, και το ταιριάζει με το αντίγραφό του του μικρότερου join που βρίσκεται στην μνήμη του.
+		\item Τα αποτελέσματα όλων των κόμβων συνδυάζονται.
+	\end{enumerate}
+	Η συγκεκριμένη στρατηγική παρουσιάζει υψηλή απόδοση σε περιπτώσεις που το ένα dataset είναι χαρακτηριστικά μικρότερο από το άλλο, και αρκετά μικρό ώστε να μπορεί να γίνει broadcast γρήγορα. Η αποφυγή της ανάγκης για shuffle μειώνει σημαντικά τα I/O στο network, ενώ είναι ιδανικό για skewed datasets, όταν το μικρότερο dataset χωράει στην μνήμη. Προϋπόθεση ωστόσο, για την καλή του απόδοση, είναι να χωράει το μικρότερο dataset στις μνήμες των επεξεργαστών. 
+    \item \textbf{Sort-Merge Join}: Πρόκειται για την στρατηγική που προτιμάται σε δύο μεγάλα datasets, ταξινομημένα στο join key. Συγκεκριμένα: 
+	\begin{enumerate}
+		\item Το Spark κάνει shuffle και sort τα datasets με βάση το join key. 
+		\item Μετά την ταξινόμηση, τα datasets σκανάρονται παράλληλα, και τα κλειδιά που ταιριάζουν συγχωνεύονται.
+		\item  Η φάση του merge συμπεριλαμβάνει μια γραμμική αναζήτηση στα ταξινομημένα datasets, καθιστώντας την αποδοτική για μεγάλα datasets. 
+	\end{enumerate}
+	Η συγκεκριμένη στρατηγική είναι αποδοτική για μεγάλα datasets, με ταξινομημένα κλειδιά join. Διαχειρίζεται επίσης πολύ καλά τα join που βασίζονται στην ισότητα των κλειδιών των δύο datasets. Ωστόσο, απαιτεί ένα κοστοβόρο shuffle και sort βήμα, στην περίπτωση των datasets που δεν έχουν ήδη ταξινομηθεί κατά το join key, και δεν είναι αποδοτική για skewed datasets με άνιση κατανομή δεδομένων, όπου το ένα κλειδί έχει πολλά ταιριάσματα. 
+    \item \textbf{Shuffle Hash Join}: Η συγκεκριμένη τεχνική κατασκευάζει ένα hash table για το μικρότερο dataset, αφού πρώτα κάνει shuffle, και μετά το ταιριάζει με το μεγαλύτερο dataset. Απαιτεί και τα δύο datasets να είναι partioned στο join key. Συγκεκριμένα: 
+	\begin{enumerate}
+		\item Και τα δύο datasets υπόκεινται σε shuffle, προκειμένου να βεβαιωθούμε πως είναι partitioned στο join key. 
+		\item Ένα hash table σχηματίζεται για το μικρότερο dataset σε κάθε partition.
+		\item Το μεγαλύτερο dataset διασχίζεται, και τα κλειδιά ταιριάζονται πάνω στο hash table. 
+	\end{enumerate}
+	Η συγκεκριμένη στρατηγική είναι πολύ αποδοτική από άποψη μνήμης για μικρά datasets, τα οποία δεν χρειάζεται να γίνουν broadcast. Ωστόσο, απαιτεί shuffling, το οποίο αυξάνει τα I/O στο network, και ο hash table πρέπει να χωράει μέσα στην μνήμη, και άρα δεν είναι ιδιαίτερα αποδοτικό για πολύ μεγάλα datasets. Χρειάζεται να είναι λοιπόν δύο datasets, με χαρακτηριστική διαφορά σε μέγεθος, αλλά χωρίς κανένα από τα δύο να μην είναι αποδοτικό να γίνει broadcast. 
+    \item \textbf{Replicated Nested Loop Join}: Η συγκεκριμένη στρατηγική αφορά την πιο brute-force τεχνική από τις τέσσερις, όπου κάθε γραμμή από το ένα dataset συγκρίνεται με κάθε γραμμή από το άλλο. 
+	\begin{enumerate}
+		\item Το ένα dataset αντιγράφεται σε όλους τους κόμβους του cluster. 
+		\item Για κάθε partition του μεγαλύτερου dataset, κάθε γραμμή του συγκρίνεται με όλες τις γραμμές στο αντιγεγραμμένο dataset. 
+		\item Οι γραμμές που έκαναν match συμπεριλαμβάνονται στο τελικό αποτέλεσμα.
+	\end{enumerate} 
+Η συγκεκρμένη τεχνική μπορεί να χρησιμοποιηθεί ακόμα και με non-deterministic conditions για join, είναι ωστόσο εξαιρετικά αργό για μεγάλα datasets, με χρονική πολυπλοκότητα $O(n \cdot m)$.
+\end{itemize}
+
+Στον σχολιασμό τώρα των επιδόσεων για καθένα από τα joins:
+\begin{enumerate}
+	\item \textbf{comm\_pop with la\_income\_clean}\\
+	Ο \textbf{Catalyst Optimizer} επέλεξε για το πρώτο join την στρατηγική \textbf{Broadcast Join}, πιθανώς επειδή εντόπισε πως το la\_income\_clean είναι αρκετά μικρό ώστε να γίνει broadcast σε όλους τους κόμβους του cluster, και επειδή η συνθήκη δεν είναι ιδιαίτερα περίπλοκη.
+	\begin{itemize}
+		\item Broadcast Join took 14.20 seconds 
+		\item Sort-Merge Join took 11.65 seconds 
+		\item Shuffle Hash Join took 10.86 seconds	
+		\item Replicated Nested Loop Join took 12.24 seconds 	
+	\end{itemize}	
+ Όπως φαίνεται από τις παραπάνω μετρήσεις, τον καλύτερο χρόνο εδώ παρουσιάζει το \textbf{Shuffle Hash Join}, με πολύ μικρή διαφορά από τα \textbf{Sort-Merge} και με το \textbf{Replicated Nested Loop Join} να ακολουθεί. Όπως αναφέραμε και προηγούμενως, το πρώτο από τα datasets μας είναι ταξινομημένο κατά το κλειδί join του και διαθέτει χαμηλό skewness, γεγονός που ευνοεί την λειτουργία του \textbf{Shuffle Hash Join}, του οποίου οι hash buckets μειώνουν την ανάγκη για sorting του δεύτερου dataset. Για το \textbf{Sort-Merge Join}, η ταξινόμηση του κλειδιού του join στο ένα τουλάχιστον από τα δύο datasets καθιστά φθηνότερο το merge. Εμφανώς, το μικρότερο από τα δύο datasets (LA\_income) παραμένει λίγο μεγαλύτερο από το ιδανικό για να το ευνοεί το broadcast. Τέλος, η κανονική, αν και όχι ανταγωνιστική, απόδοση του \textbf{Replicated Nested Loop Join}, μας υποδεικνύει πως δεν πρόκειται για εξαιρετικά μεγάλα datasets. 
+\item \textbf{crime\_data\_geom with flattened\_blocks\_df} \\
+Ο Catalyst Optimizer δεν υποστηρίζει hash-based ή sort-based joins για spatial συνθήκες όπως το ST\_Within.
+Το crime\_data\_geom και το flattened\_blocks\_df δεν είναι μικρά, γεγονός που καθιστά απαγορευτικό το Broadcast Join.
+	\begin{itemize}
+		\item Broadcast Join - crime\_data\_location took 30.19 seconds 
+		\item Sort-Merge Join - crime\_data\_location took 25.05 seconds
+		\item Shuffle Hash Join - crime\_data\_location took 16.59 seconds
+		\item Replicated Nested Loop Join - crime\_data\_location took 15.52 seconds
+	\end{itemize}
+Στο συγκεκριμένο join αντιμετωπίσαμε την ιδιαιτερότητα πως το hint μας φάνηκε να επιτυγχάνει μόνο στην περίπτωση του \textbf{Broadcast Join}. Για όλα τα υπόλοιπα, επαναχρησιμοποιήθηκε η τεχνική του \textbf{RangeJoin}.  Ο λόγος για αυτό είναι πως το \textbf{ST\_Within} είναι μια spatial συνάρτηση και δεν είναι απλή ισοδυναμία. Το Spark δεν υποστηρίζει hash-based ή sort-based joins σε non-equijoin συνθήκες από προεπιλογή, και ακόμα και αν παρέχονται hints.
+\item \textbf{income\_result with crime\_result} \\
+Ο Catalyst Optimizer λειτούργησε βάση του ότι το \textbf{Sort-Merge Join} είναι η καλύτερη επιλογή για equijoin συνθήκες με datasets που έχουν παρόμοιο μέγεθος. 
+	\begin{itemize}
+		\item Broadcast Join - result took 71.60 seconds
+		\item Sort-Merge Join - result took 39.25 seconds
+		\item Shuffle Hash Join - result took 35.52 seconds
+		\item Replicated Nested Loop Join - result took 26.49 seconds
+	\end{itemize}
+Τέλος, όπως φαίνεται παραπάνω τον καλύτερο χρόνο παρουσιάσε με διαφορά το \textbf{Replicated Nested Loop Join}, το καρτεσιανό δηλαδή γινόμενο, το οποίο μας υποδεικνύει πως πρόκειται για πλέον αρκετά μικρά datasets με απλή συνθήκη join. Το \textbf{Shuffle Hash Join} εξακολουθεί να είναι ανταγωνιστικό, υποδεικνύοντας ότι το μέγεθος των δεδομένων ήταν ακόμη διαχειρίσιμο για hash partitioning. Το \textbf{Sort-Merge Join} είναι πιο αργό, πιθανώς λόγω της ταξινόμησης που απαιτείται. Τέλος, το \textbf{Broadcast Join} είναι πολύ πιο αργό, γεγονός που μας δείχνει πως ενώ τα datasets είναι σχετικά μικρά, δεν έχουν μεγάλες διαφορές μεταξύ τους. 
+\end{enumerate}
+
+\newpage
+\subsection{Query 4: Ανάλυση Φυλετικού Προφίλ Θυμάτων Εγκλημάτων}
+\subsubsection*{ Υλοποίηση}
+Η υλοποίηση για το \textbf{Query 4} περιλαμβάνει τα εξής βήματα:
+
+\begin{enumerate}
+    \item \textbf{Φόρτωση Δεδομένων:} 
+    Τα δεδομένα διαβάζονται από αρχεία που είναι αποθηκευμένα στο S3:
+    \begin{itemize}
+        \item \texttt{Crime\_Data\_from\_2010\_to\_2019\_20241101.csv}: Πληροφορίες εγκλημάτων (συντεταγμένες, ημερομηνίες, χαρακτηριστικά θυμάτων).
+        \item \texttt{LA\_income\_2015.csv}: Πληροφορίες εισοδήματος ανά περιοχή (ZIP code).
+        \item \texttt{RE\_codes.csv}: Κωδικοί φυλετικής καταγωγής (\texttt{Vict Descent}) με την περιγραφή τους.
+        \item \texttt{2010\_Census\_Blocks.geojson}: Γεωγραφικά δεδομένα για τα blocks.
+    \end{itemize}
+
+    \item \textbf{Προσθήκη Γεωμετρικής Πληροφορίας:}
+    Στον πίνακα \texttt{crime\_data}, προστίθεται γεωμετρική πληροφορία (\texttt{geometry}) μέσω της συνάρτησης \texttt{ST\_Point}. Η γεωμετρική σύζευξη (\texttt{ST\_Within}) χρησιμοποιείται για να αντιστοιχηθούν τα εγκλήματα σε συγκεκριμένες περιοχές.
+
+    \item \textbf{Φιλτράρισμα Εγκλημάτων για το Έτος 2015:}
+    Επιλέγονται μόνο τα εγκλήματα που διαπράχθηκαν το 2015, μέσω φιλτραρίσματος στη στήλη \texttt{DATE OCC}.
+
+    \item \textbf{Εύρεση Περιοχών με Υψηλό και Χαμηλό Εισόδημα:}
+   Από το προηγούμενο Query γνωρίζουμε τις περιοχές με το υψηλότερο και χαμηλότερο εισόδημα. Επομένως, φιλτράρουμε τα δεδομένα του LA\_income\_2015, προκειμένου να διατηρήσουμε μόνο τις καταχωρήσεις που περιέχουν τα ονόματα αυτών των περιοχών στο πεδίο "Community".
+    \begin{itemize}
+        \item Οι 3 περιοχές με το υψηλότερο εισόδημα εισάγονται στο dataset (\texttt{top\_income}).
+        \item Οι 3 περιοχές με το χαμηλότερο εισόδημα εισάγονται στο dataset (\texttt{bottom\_income}).
+    \end{itemize}
+
+    \item \textbf{Αντιστοίχιση Δεδομένων και Φιλτράρισμα με ZIP Codes:}
+    Τα δεδομένα εγκλημάτων (\texttt{crime\_data\_2015}) συσχετίζονται με τις περιοχές εισοδήματος (\texttt{la\_income}) μέσω της στήλης \texttt{ZCTA10} και \texttt{COMM}. Στη συνέχεια, γίνεται επιπλέον συσχέτιση με τους κωδικούς φυλετικής καταγωγής (\texttt{RE\_codes}).
+
+    \item \textbf{Ομαδοποίηση και Καταμέτρηση Εγκλημάτων:}
+    \begin{itemize}
+        \item Οι περιοχές με το υψηλότερο εισόδημα (\texttt{richest\_crimes}) και οι περιοχές με το χαμηλότερο εισόδημα (\texttt{poorest\_crimes}) φιλτράρονται βάσει των \texttt{Zip Codes}.
+        \item Ομαδοποιούνται τα εγκλήματα ανά φυλετική καταγωγή (\texttt{Vict Descent Full}), και μετριέται ο συνολικός αριθμός θυμάτων για κάθε ομάδα.
+    \end{itemize}
+
+    \item \textbf{Εμφάνιση Αποτελεσμάτων:}
+    Τα αποτελέσματα εκτυπώνονται σε δύο πίνακες:
+    \begin{itemize}
+        \item Πίνακας για τις περιοχές με το υψηλότερο εισόδημα, ταξινομημένος κατά αριθμό θυμάτων (φθίνουσα σειρά).
+        \item Πίνακας για τις περιοχές με το χαμηλότερο εισόδημα, ταξινομημένος επίσης κατά αριθμό θυμάτων.
+    \end{itemize}
+\end{enumerate}
+
+\begin{table}[h!]
+\centering
+\caption{Περιοχές με Υψηλότερο Εισόδημα}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Vict Descent Full} & \textbf{Count} \\
+\hline
+White & 668 \\
+Other & 99 \\
+Hispanic/Latin/Mexican & 77 \\
+Black & 50 \\
+Unknown & 48 \\
+Other Asian & 23 \\
+Chinese & 1
+American Indian/ & 1
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h!]
+\centering
+\caption{Περιοχές με Χαμηλότερο Εισόδημα}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Vict Descent Full} & \textbf{Count} \\
+\hline
+Hispanic/Latin/Mexican & 3157 \\
+Black & 1292 \\
+White & 195 \\
+Unknown & 167 \\
+Other & 113 \\
+Other Asian & 24 \\
+Filipino & 2 \\
+Japanese & 1 \\
+Guamanian & 1 \\
+Pacific Islander &1 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection*{ Συγκρίσεις και Αποτελέσματα}
+Στην συνέχεια, καλούμαστε να εκτελέσουμε την υλοποίησή μας του συγκεκριμένου Query, εφαρμόζοντας κλιμάκωση στο σύνολο των υπολογιστικών πόρων που θα χρησιμοποιήσουμε. Καλούμαστε, δηλαδή, να εκετελέσουμε την υλοποίησή μας σε \textbf{2 executors}, με τρία διαφορετικά configurations. \\
+Προτού παραθέσουμε και σχολιάσουμε τα αποτελέσματά μας, είναι σημαντικό να κατανοήσουμε ορισμένα δεδομένα για τα configurations αυτά στο Apache Spark. \\
+Σε καθαρά δομικές γνώσεις, το AWS SageMaker αποτελείται από clusters, τα οποία με την σειρά τους αποτελούνται από κόμβους, που συνεργάζονται ως ένα ενιαίο σύστημα για να εκτελέσουν tasks παράλληλα. Ένα cluster αποτελείται από:
+\begin{enumerate}
+	\item  Ένα \textbf{Master Node}, με ρόλο την οργάνωση, την ανάθεση και την παρακολούθηση της εκτέλεσης των tasks από τα worker nodes. Στο Spark, τον ρόλο αυτό επιτελεί το \textbf{driver process}. 
+	\item Τα \textbf{Worker Nodes}, με ρόλο την εκτέλεση των tasks που τους ανατίθενται από το Master Node. Επιτελούν τον διαμοιρασμό των δεδομένων, του υπολογισμούς και την αποθήκευση ενδιάμεσων δεδομένων, καθώς επίσης και την εκτέλεση των executor processes, που εκτελούν tasks παράλληλα. 
+\end{enumerate}
+Γνωρίζουμε πως οι \textbf{executors} αποτελούν τις διεργασίες, υπεύθυνες για την εκτέλεση ανεξάρτητων tasks μιας δουλειάς Spark, μέσα σε κάθε κόμβο του δικτύου του. Φυσικά, μπορούν να υπάρχουν παραπάνω από ένας executor σε κάθε κόμβο, αλλά υπάρχει ένα threshold σε κάθε κόμβο, ο οποίος δηλώνει μέχρι πόσους executors μπορεί να υποστηρίξει ώστε να είναι το δίκτυο αποδοτικό. Ως ξεχωριστές διεργασίες, ακόμα και οι executors που τρέχουν στον ίδιο κόμβο δεν μοιράζονται την ίδια μνήμη (καθώς, εξ' ορισμού διαθέτουν διαφορετικό memory address space) και χρειάζονται την Inter-Process (Inter-Executor) επικοινωνία. \\
+Ακόμη ένα σημαντικό αντικείμενο προς κατανόηση, είναι ο αριθμός των \textbf{cores} (πυρήνων) που ανατίθενται στον κάθε executor (εκτελεστή). Αυξάνοντας τον αριθμό των \textbf{Cores per Executor}, αντί να αυξήσουμε τον αριθμό των executors απευθείας, μπορεί να μειωθεί το κόστος της επικοινωνίας μεταξύ διαφορετικών Executors (Inter-Executor Communication) μέσω της κοινής μνήμης και να αυξηθεί η ταχύτητα ολοκλήρωσης του κάθε task. \\
+Με βάση αυτά, μια πρώτη σκέψη για την επίτευξη της βέλτιστης απόδοσης, θα ήταν η δημιουργία \textbf{"Fat executors"}. Πρόκειται ουσιαστικά για την δημιουργία εκτελεστών με μεγάλο αριθμό πυρήνων (σχεδόν όλων των πυρήνων που διαθέτει ένας κόμβος του δικτύου), με σκοπό να διατηρηθεί μόλις ένας executor ανά working node. Ενώ ωστόσο η τεχνική αυτή θα ελαχιστοποιούσε την επικοινωνία ανάμεσα στους εκτελεστές (Inter-Executor Communication), θα προκαλούσε ορισμένα άλλα προβλήματα, όπως: 
+\begin{enumerate}
+\item Προβλήματα στην μνήμη του ίδιου του executor, η οποία είναι κοινή ανάμεσα στους πυρήνες και περιορισμένη. Aποτέλεσμα της, θα ήταν οι καθυστερήσεις από τον garbage collector, ο οποίος θα πρέπει να διαχειριστεί περισσότερα δεδομένα στο ίδιο heap και άρα να απελευθερώνει συνεχώς αχρησιμοποίητη μνήμη που καταλαμβάνουν τα πολλά διαφορετικά tasks που θα εκτελούνται ταυτόχρονα στον κάθε executor. 
+\item Ανισορροπία στην χρήση των πόρων του cluster, με αποτέλεσμα υποεκμετάλλευση ορισμένων κόμβων. 
+\end{enumerate}
+Έχοντας πλέον μια καθαρή εικόνα της δομής ενός \textbf{Spark Cluster}, μπορούμε να προχωρήσουμε στην ανάλυση των αποτελεσμάτων από τις εκτελέσεις των διαφορετικών configurations. 
+Παρακάτω παρατίθενται τα αποτελέσματα των 10 δοκιμών μας, για τα τρία διαφορετικά configurations, μετρημένα σε δευτερόλεπτα (seconds).
+\begin{table}[H]
+\centering
+\caption{Comparison of Execution Times for Query 4 Configurations}
+\label{tab:query4_execution_times}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\textbf{Configuration}           & \textbf{Try 1} & \textbf{Try 2} & \textbf{Try 3} & \textbf{Try 4}  & \textbf{Try 5}\\ \hline
+\textbf{1 core/2GB memory}        &	71.43	&	97.33	&	86.80	&	64.09	&	97.49	\\ \hline
+\textbf{2 cores/4GB memory}      &	66.84	&	81.29	&	66.52	&	63.32	&	70.49	\\ \hline
+\textbf{4 cores/8GB memory}      & 	67.96	&	70.93	&	64.46	&	63.61	&	65.86	\\ \hline
+\end{tabular}
+
+\vspace{0.5cm}
+
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\textbf{Configuration}           & \textbf{Try 6} & \textbf{Try 7} & \textbf{Try 8} & \textbf{Try 9} & \textbf{Try 10} \\ \hline
+\textbf{1 core/2GB memory}        &	88.61	&	98.34	&	89.51	&	90.19	&	84.40	\\ \hline
+\textbf{2 cores/4GB memory}      &	74.73	&	70.70	&	68.68	&	71.74	&	68.72	\\ \hline
+\textbf{4 cores/8GB memory}      &	66.03	&	66.99	&	66.00	&	67.08	&	64.79	\\ \hline
+\end{tabular}
+\end{table}
+
+
+\subsubsection*{ Σχολιασμός }
+Παρακάτω σχολιάζουμε τις επιδόσεις των τριών διαφορετικών configurations:
+\begin{enumerate}
+	\item Αρχικά, παρατηρείται πως το configuration \textbf{1 core/2GB memory} παρουσιάζει τους μεγαλύτερους και μεγαλύτερου εύρους χρόνους ανάμεσα στις εκτελέσεις. Η χαμηλή απόδοση του συγκεκριμένου configuration μπορεί εύκολα να αποδοθεί στον χαμηλό βαθμό παραλληλοποίησης των tasks, καθώς επίσης και στην μηδενική εκμετάλλευση της κοινής μνήμης ανάμεσα στα cores ενός executor. Ακόμη, κάθε executor διαθέτει την λιγότερη μνήμη συγκριτικά με τα υπόλοιπα configurations μας, γεγονός που απαιτεί την συνεχή εκκαθάριση της προκειμένου πολλά διαφορετικά tasks να εκτελεστούν. 
+	\item Το configuration \textbf{2 cores/4GB memory} παρουσιάζει μια χαρακτηριστική βελτίωση και πιο σταθερή συμπεριφορά σε σχέση με το πρώτο, καθώς επίσης και σε περιπτώσεις κοντινούς χρόνους με την καλύτερη εκδοχή, το τρίτο configuration. Μπορούμε να αιτιολογήσουμε αυτό το αποτέλεσμα με το γεγονός της αύξησης της παραλληλοποίησης, καθώς πλέον κάθε executor διαθέτει 2 cores, καθώς επίσης και με την αύξηση της κοινής μνήμης των executor, η οποία έχει διπλασιαστεί.  
+	\item Όπως φαίνεται παραπάνω, το τρίτο configuration (\textbf{4 cores/8GB memory}), αποδείχθηκε σε όλες τις μετρήσεις το πιο γρήγορο και σταθερό σε χρόνους εκτέλεσης. Η έκβαση αυτή είναι πολύ λογική, καθώς παρουσιάζει τον μέγιστο βαθμό παραλληλοποίησης χωρίς να ξεφεύγει από τα προτινόμενα όρια πυρήνων ανά executor, καθώς επίσης παρέχει αρκετή μνήμη ανά executor προκειμένου να εκτελούνται χωρίς πρόβλημα τα tasks.  
+\end{enumerate}
+
+\newpage
+\subsection {Query 5}
+\subsection*{Περιγραφή Υλοποίησης για το Query 5}
+
+Το Query 5 αφορά την εύρεση, ανά αστυνομικό τμήμα (\texttt{DIVISION}), του αριθμού των εγκλημάτων που έλαβαν χώρα πλησιέστερα σε αυτό, καθώς και της μέσης απόστασης (\texttt{average distance}) των εγκλημάτων από το αντίστοιχο τμήμα. Τα αποτελέσματα ταξινομούνται κατά αριθμό εγκλημάτων (\texttt{crime count}) σε φθίνουσα σειρά. Η υλοποίηση πραγματοποιείται ως εξής:
+
+\paragraph{Αρχικοποίηση και Φόρτωση Δεδομένων:}
+\begin{itemize}
+    \item Δημιουργείται ένα Spark Session μέσω της συνάρτησης \texttt{init\_spark}, όπου καθορίζονται οι πόροι (cores, memory, executors) για κάθε διαμόρφωση.
+    \item Τα δεδομένα εγκλημάτων (\texttt{crime\_data}) φορτώνονται από δύο αρχεία CSV, \texttt{Crime\_Data\_from\_2010\_to\_2019} και \texttt{Crime\_Data\_from\_2020\_to\_Present}, τα οποία ενώνονται μέσω \texttt{union}.
+    \item Τα δεδομένα των αστυνομικών τμημάτων (\texttt{police\_stations}) φορτώνονται από το αρχείο \texttt{LA\_Police\_Stations.csv}.
+\end{itemize}
+
+\paragraph{Δημιουργία Γεωμετρικών Δεδομένων:}
+\begin{itemize}
+    \item Δημιουργούνται γεωμετρικά σημεία (\texttt{ST\_Point}) για τις συντεταγμένες των εγκλημάτων (\texttt{crime\_point}) και των αστυνομικών τμημάτων (\texttt{station\_point}).
+\end{itemize}
+
+\paragraph{Υπολογισμός Αποστάσεων:}
+\begin{itemize}
+    \item Πραγματοποιείται \textbf{cross join} μεταξύ των δεδομένων εγκλημάτων και αστυνομικών τμημάτων.
+    \item Υπολογίζεται η απόσταση (\texttt{distance}) μεταξύ κάθε εγκλήματος και κάθε αστυνομικού τμήματος χρησιμοποιώντας τη συνάρτηση \texttt{ST\_DistanceSphere}.
+\end{itemize}
+
+\paragraph{Εύρεση Πλησιέστερου Αστυνομικού Τμήματος:}
+\begin{itemize}
+    \item Γίνεται ομαδοποίηση των εγκλημάτων (\texttt{groupBy}) ανά \texttt{DR\_NO} και υπολογίζεται η ελάχιστη απόσταση (\texttt{minimum\_distance}) για κάθε έγκλημα.
+    \item Πραγματοποιείται \texttt{join} μεταξύ του αρχικού \texttt{crime\_distances} και του παραπάνω αποτελέσματος για να βρεθεί το πλησιέστερο τμήμα.
+    \item Επιλέγονται μόνο τα απαραίτητα πεδία (\texttt{DR\_NO}, \texttt{DIVISION}, \texttt{distance}).
+\end{itemize}
+
+\paragraph{Ομαδοποίηση και Υπολογισμός Μετρήσεων:}
+\begin{itemize}
+    \item Τα δεδομένα ομαδοποιούνται (\texttt{groupBy}) ανά \texttt{DIVISION}.
+    \item Υπολογίζονται:
+        \begin{itemize}
+            \item Ο συνολικός αριθμός εγκλημάτων (\texttt{crime count}) μέσω \texttt{count}.
+            \item Η μέση απόσταση (\texttt{average distance}) μέσω \texttt{avg}.
+        \end{itemize}
+    \item Τα αποτελέσματα ταξινομούνται κατά \texttt{crime count} σε φθίνουσα σειρά (\texttt{orderBy}).
+\end{itemize}
+
+\paragraph{Εκτέλεση για Διαφορετικά Configurations:}
+\begin{itemize}
+    \item Το Query εκτελείται για τρεις διαφορετικές διαμορφώσεις (διαφορετικά cores, memory και executors).
+    \item Χρονίζεται ο συνολικός χρόνος εκτέλεσης (\texttt{execution time}) για κάθε διαμόρφωση.
+\end{itemize}
+
+\subsubsection*{ Συγκρίσεις και Αποτελέσματα}
+\begin{table}[H]
+\centering
+\caption{Comparison of Execution Times for Different Configurations}
+\label{tab:execution_times}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\textbf{Configuration}	& \textbf{Try 1} & \textbf{Try 2} & \textbf{Try 3} & \textbf{Try 4}  & \textbf{Try 5}\\ \hline
+\textbf{2 executors × 4 cores/8GB}   &	16.55	&	27.39	&	7.25	&	6.63	&	6.29	\\ \hline
+\textbf{4 executors × 2 cores/4GB}   &	8.01 	&	18.64	&	6.98	&	6.23	&	6.15	\\ \hline
+\textbf{8 executors × 1 core/2GB}    &	7.18	&	8.57	&	6.72	&	6.28	&	6.20	\\ \hline
+\end{tabular}
+
+\vspace{0.5cm}
+
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\textbf{Configuration}	& \textbf{Try 6} & \textbf{Try 7} & \textbf{Try 8} & \textbf{Try 9} & \textbf{Try 10} \\ \hline
+\textbf{2 executors × 4 cores/8GB}   &	6.36	&	6.01	&	6.35	&	10.62	&	6.22	\\ \hline
+\textbf{4 executors × 2 cores/4GB}   &	6.00	&	5.98	&	5.83	&	7.37	&	6.11	\\ \hline
+\textbf{8 executors × 1 core/2GB}    &	6.03	&	5.94	&	6.18	&	6.25	&	6.05	\\ \hline
+\end{tabular}
+\end{table}
+
+\subsubsection*{ Σχολιασμός }
+Παρακάτω σχολιάζουμε τα αποτελέσματα που πήραμε για τα παραπάνω configurations, στηριζόμενοι στην θεωρία που αναλύσαμε στο προηγούμενο ερώτημα. 
+\begin{enumerate}
+	\item \textbf{2 executors × 4 cores/8GB}: Το συγκεκριμένο configuration παρουσιάζει τους κατά κανόνα μεγαλύτερους χρόνους σε σύγκριση με τα υπόλοιπα. Παρόλης της ύπαρξης περισσότερης μνήμης ανά executor και περισσότερων cores, η μεγάλη διακύμανση στους χρόνους δείχνει ότι ο μικρότερος αριθμός executors δεν ευνοεί την επίδοση της εκτέλεσής μας. Το γεγονός αυτό μπορούμε να δικαιολογήσουμε αρχικά, γνωρίζοντας πως σε περίπτωση αποτυχίας ενός από τα tasks που τρέχουν, τότε και τα 4 tasks του συγκεκριμένου executor θα πρέπει να επανεπεξεργαστούν. Προφανώς, μειώνεται η ανάγκη για Inter-Executor Communication, καθώς κάθε executor διαθέτει από 8GB κοινής μνήμης για τα 4 cores του. Ωστόσο, αυτή η δυνατότητα δεν φαίνεται να βελτιώνει ιδιαίτερα τις επιδόσεις. 
+	\item \textbf{4 executors × 2 cores/4GB}: Αυτή η εκδοχή παρουσιάζει σημαντική συνολική βελτίωση από το προηγούμενο configuration. Με την αύξηση των executors, και την ταυτόχρονη μείωση των cores τους και της κοινής μνήμης του καθενός, το σύστημά μας φαίνεται παρόλαυτά να λειτουργεί καλύτερα, γεγονός που μας οδηγεί στο να πιστέψουμε πως δεν υπήρξε μεγάλη ανάγκη σε Inter-Executor Communication για την επεξεργασία των tasks. Πράγματι, η τακτική ομαδοποίηση των DataSets κατά την κάθε φορά σημαντική πληροφορία, ενδέχεται να επιφέρει σημαντικά σε αυτή την απόδοση. 
+	\item \textbf{8 executors × 1 core/2GB}: Το κατά τον μεγαλύτερο βαθμό βέλτιστης απόδοσης configuration μας. Από ότι φαίνεται, η μείωση της μνήμης του κάθε executor και ο περιορισμός του ενός task ανά executor δεν επηρεάζει αρνητικά την επίδοση της εκτέλεσής μας, οδηγώντας μας ξανά στην σκέψη πως η συνεχής ομαδοποίηση και οργάνωση των δεδομένων δεν απαιρεί πολλές Inter-Executor επικοινωνίες. 
+\end{enumerate}
+\end{document}
